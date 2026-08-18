@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+uploads/*
+!uploads/.gitkeep
+transcripts/*
+!transcripts/.gitkeep
+notes/*
+!notes/.gitkeep
+vectors/*
+!vectors/.gitkeep
+.venv/
+venv/
+.claude/
+*.pdf

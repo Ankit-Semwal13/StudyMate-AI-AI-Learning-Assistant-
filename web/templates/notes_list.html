@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Notes - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#128196; Notes</h1>
+  <p>All the videos you've processed, with their generated notes.</p>
+</div>
+
+{% if videos %}
+<div class="card-list">
+  {% for v in videos %}
+  <a href="/notes/{{ v.slug }}" class="card-row">
+    <div class="project-thumb">&#127909;</div>
+    <div class="project-info">
+      <div class="project-title">{{ v.title }}</div>
+      <div class="project-meta">{{ v.when }} &middot; {{ v.duration }}</div>
+      <div class="project-stats">
+        <span>&#128196; {{ v.chunks|length }} chapters</span>
+        <span>&#9201;&#65039; {{ v.timestamps|length }} timestamps</span>
+        <span>&#9989; {{ v.action_items|length }} action items</span>
+      </div>
+    </div>
+    <span class="chevron">&#8250;</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No videos processed yet.</p>
+  <button class="primary-btn" data-open-upload>&#128640; Process your first video</button>
+</div>
+{% endif %}
+
+{% endblock %}

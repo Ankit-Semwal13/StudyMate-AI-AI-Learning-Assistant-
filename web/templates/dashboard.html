@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - StudyMate AI{% endblock %}
+{% block content %}
+
+<section class="welcome-banner">
+  <div class="welcome-text">
+    <h1>Welcome back, {{ user_name.split(' ')[0] if user_name else 'there' }}! &#128075;</h1>
+    <p>Transform any lecture, meeting, or YouTube video into smart learning materials with the power of AI.</p>
+    <div class="welcome-actions">
+      <button class="primary-btn" data-open-upload data-open-upload-tab="file">&#128228; Upload Video</button>
+      <button class="ghost-btn" data-open-upload data-open-upload-tab="url">&#128279; Paste YouTube Link</button>
+    </div>
+  </div>
+  <div class="welcome-illustration">
+    <svg viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="screenGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#6366f1"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="130" cy="172" rx="90" ry="10" fill="#000" opacity="0.25"/>
+      <rect x="40" y="60" width="150" height="95" rx="10" fill="#1c1c2b" stroke="#33334a" stroke-width="2"/>
+      <rect x="50" y="70" width="130" height="75" rx="4" fill="url(#screenGrad)"/>
+      <circle cx="115" cy="107" r="16" fill="rgba(255,255,255,0.9)"/>
+      <path d="M110 99 L124 107 L110 115 Z" fill="#6366f1"/>
+      <rect x="25" y="155" width="180" height="10" rx="5" fill="#26263a"/>
+      <rect x="180" y="30" width="46" height="34" rx="8" fill="#22c55e"/>
+      <rect x="188" y="40" width="30" height="4" rx="2" fill="#0b3a1f"/>
+      <rect x="188" y="48" width="20" height="4" rx="2" fill="#0b3a1f"/>
+      <rect x="18" y="40" width="46" height="34" rx="8" fill="#f59e0b"/>
+      <rect x="26" y="50" width="30" height="4" rx="2" fill="#4a2e05"/>
+      <rect x="26" y="58" width="18" height="4" rx="2" fill="#4a2e05"/>
+      <circle cx="222" cy="90" r="4" fill="#fff" opacity="0.8"/>
+      <circle cx="14" cy="100" r="3" fill="#fff" opacity="0.6"/>
+      <circle cx="238" cy="130" r="3" fill="#fff" opacity="0.5"/>
+      <g transform="translate(206,140)">
+        <rect x="0" y="14" width="20" height="14" rx="2" fill="#7c4a2d"/>
+        <path d="M10 0 C -6 4, -6 20, 10 18 C 26 20, 26 4, 10 0 Z" fill="#22c55e"/>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="stat-grid">
+  <div class="stat-card" style="--accent:#4f7cff">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#4f7cff,#6d5bff)">&#127909;</div>
+      <span class="stat-menu">&#8942;</span>
+    </div>
+    <div class="stat-label">Videos</div>
+    <div class="stat-value">{{ stats.videos }}</div>
+    <div class="stat-sub">Uploaded Videos</div>
+    <div class="stat-trend up">&#8593; Processed locally</div>
+  </div>
+
+  <div class="stat-card" style="--accent:#22c55e">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a)">&#128196;</div>
+      <span class="stat-menu">&#8942;</span>
+    </div>
+    <div class="stat-label">Notes</div>
+    <div class="stat-value">{{ stats.notes }}</div>
+    <div class="stat-sub">Notes Generated</div>
+    <div class="stat-trend up">&#8593; Chapters across all videos</div>
+  </div>
+
+  <div class="stat-card" style="--accent:#f59e0b">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">&#129504;</div>
+      <span class="stat-menu">&#8942;</span>
+    </div>
+    <div class="stat-label">Flashcards</div>
+    <div class="stat-value">{{ stats.flashcards }}</div>
+    <div class="stat-sub">Cards Created</div>
+    {% if stats.flashcards %}
+      <div class="stat-trend up">&#8593; Across all videos</div>
+    {% else %}
+      <div class="stat-trend soon">Generate from any video</div>
+    {% endif %}
+  </div>
+
+  <div class="stat-card" style="--accent:#ec4899">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#ec4899,#db2777)">&#10067;</div>
+      <span class="stat-menu">&#8942;</span>
+    </div>
+    <div class="stat-label">Quiz</div>
+    <div class="stat-value">{{ stats.quiz }}</div>
+    <div class="stat-sub">Questions Generated</div>
+    {% if stats.quiz %}
+      <div class="stat-trend up">&#8593; Across all videos</div>
+    {% else %}
+      <div class="stat-trend soon">Generate from any video</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="lower-grid">
+  <div class="panel projects-panel">
+    <div class="panel-header">
+      <h3>&#128193; Recent Projects</h3>
+      <a href="/notes" class="view-all">View all</a>
+    </div>
+
+    {% if recent_projects %}
+    <div class="project-list">
+      {% for p in recent_projects %}
+      <a href="/notes/{{ p.slug }}" class="project-row">
+        <div class="project-thumb">&#127909;</div>
+        <div class="project-info">
+          <div class="project-title">{{ p.title }}</div>
+          <div class="project-meta">{{ p.when }} &middot; {{ p.duration }}</div>
+          <div class="project-stats">
+            <span>&#128196; {{ p.notes_count }}</span>
+            <span>&#9201;&#65039; {{ p.timestamps_count }}</span>
+            <span>&#9989; {{ p.action_items_count }}</span>
+          </div>
+        </div>
+        <span class="project-menu">&#8942;</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>No videos processed yet.</p>
+      <button class="primary-btn" data-open-upload>&#128640; Process your first video</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3>&#9889; Quick Actions</h3>
+    </div>
+    <div class="quick-actions">
+      <a href="/notes" class="quick-action">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a)">&#128196;</div>
+        <div class="qa-text">
+          <div class="qa-title">Generate Notes</div>
+          <div class="qa-sub">Generate detailed notes from your videos</div>
+        </div>
+        <span class="chevron">&#8250;</span>
+      </a>
+      <a href="/flashcards" class="quick-action">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">&#129504;</div>
+        <div class="qa-text">
+          <div class="qa-title">Create Flashcards</div>
+          <div class="qa-sub">Create flashcards to remember key concepts</div>
+        </div>
+        <span class="chevron">&#8250;</span>
+      </a>
+      <a href="/quiz" class="quick-action">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#a855f7,#7c3aed)">&#10067;</div>
+        <div class="qa-text">
+          <div class="qa-title">Generate Quiz</div>
+          <div class="qa-sub">Generate quiz questions to test your knowledge</div>
+        </div>
+        <span class="chevron">&#8250;</span>
+      </a>
+      <a href="/chat" class="quick-action">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">&#128172;</div>
+        <div class="qa-text">
+          <div class="qa-title">Chat with Video</div>
+          <div class="qa-sub">Ask questions and get answers from your video content</div>
+        </div>
+        <span class="chevron">&#8250;</span>
+      </a>
+      <a href="/notes" class="quick-action">
+        <div class="qa-icon" style="background:linear-gradient(135deg,#ec4899,#db2777)">&#128190;</div>
+        <div class="qa-text">
+          <div class="qa-title">Export Notes</div>
+          <div class="qa-sub">Export notes to PDF, DOCX or Markdown</div>
+        </div>
+        <span class="chevron">&#8250;</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h3>&#128200; Recent Activity</h3>
+      <a href="/notes" class="view-all">View all</a>
+    </div>
+    {% if recent_activity %}
+    <div class="timeline">
+      {% for a in recent_activity %}
+      <div class="timeline-row">
+        <span class="timeline-dot">&#128228;</span>
+        <div class="timeline-text">
+          <div>{{ a.text }}</div>
+        </div>
+        <div class="timeline-when">{{ a.when }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state small"><p>No activity yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

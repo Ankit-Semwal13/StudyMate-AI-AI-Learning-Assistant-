@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Flashcards - {{ v.title }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#129504; {{ v.title }}</h1>
+  <p><a href="/flashcards" style="color:#a78bfa">&larr; Back to Flashcards</a> &middot; <a href="/notes/{{ v.slug }}" style="color:#a78bfa">View Notes</a></p>
+</div>
+
+{% if v.flashcards %}
+<div class="content-card">
+  <div class="flashcard-viewer">
+    <div class="flashcard-counter" id="fc-counter">1 / {{ v.flashcards|length }}</div>
+
+    <div class="flashcard-stage">
+      <div class="flashcard" id="flashcard">
+        <div class="flashcard-face flashcard-front">
+          <div class="flashcard-tag">Question</div>
+          <div id="fc-question"></div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="flashcard-tag">Answer</div>
+          <div id="fc-answer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard-controls">
+      <button id="fc-prev">&#8592; Prev</button>
+      <button id="fc-flip" class="primary">Flip Card</button>
+      <button id="fc-next">Next &#8594;</button>
+    </div>
+    <button id="fc-regenerate" style="background:transparent;border:none;color:var(--text-dimmer);font-size:12px;cursor:pointer;">&#128260; Regenerate flashcards</button>
+  </div>
+</div>
+{% else %}
+<div class="content-card generate-card">
+  <div class="gc-icon">&#129504;</div>
+  <h2>No flashcards yet</h2>
+  <p>Generate flashcards from this video's transcript - each card tests one fact or concept actually covered.</p>
+  <button class="primary-btn" id="generate-btn">&#9889; Generate Flashcards</button>
+  <div class="generate-progress" id="generate-progress">
+    <div class="progress-track"><div class="progress-fill" id="generate-fill"></div></div>
+    <div class="progress-label" id="generate-label">Starting...</div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var slug = {{ v.slug|tojson }};
+  var cards = {{ v.flashcards|default([])|tojson }};
+
+  function startJob(endpoint) {
+    var btn = document.getElementById('generate-btn');
+    var progress = document.getElementById('generate-progress');
+    var fill = document.getElementById('generate-fill');
+    var label = document.getElementById('generate-label');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    progress.style.display = 'block';
+
+    fetch(endpoint, { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var poll = setInterval(function () {
+          fetch('/api/jobs/' + data.job_id)
+            .then(function (r) { return r.json(); })
+            .then(function (job) {
+              var pct = Math.round((job.fraction || 0) * 100);
+              fill.style.width = pct + '%';
+              label.textContent = job.stage || 'Working...';
+              if (job.status === 'done') {
+                clearInterval(poll);
+                label.textContent = 'Done! Reloading...';
+                setTimeout(function () { window.location.reload(); }, 500);
+              } else if (job.status === 'error') {
+                clearInterval(poll);
+                label.textContent = 'Error: ' + (job.error || 'something went wrong');
+                btn.disabled = false;
+                btn.textContent = 'Retry';
+              }
+            });
+        }, 1500);
+      });
+  }
+
+  var generateBtn = document.getElementById('generate-btn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', function () {
+      startJob('/api/flashcards/' + slug);
+    });
+  }
+
+  var regenBtn = document.getElementById('fc-regenerate');
+  if (regenBtn) {
+    regenBtn.addEventListener('click', function () {
+      regenBtn.textContent = 'Regenerating...';
+      regenBtn.disabled = true;
+      fetch('/api/flashcards/' + slug, { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var poll = setInterval(function () {
+            fetch('/api/jobs/' + data.job_id)
+              .then(function (r) { return r.json(); })
+              .then(function (job) {
+                if (job.status === 'done') { clearInterval(poll); window.location.reload(); }
+                else if (job.status === 'error') { clearInterval(poll); regenBtn.textContent = 'Failed - try again'; regenBtn.disabled = false; }
+              });
+          }, 1500);
+        });
+    });
+  }
+
+  if (cards.length) {
+    var idx = 0;
+    var flipped = false;
+    var el = {
+      counter: document.getElementById('fc-counter'),
+      card: document.getElementById('flashcard'),
+      question: document.getElementById('fc-question'),
+      answer: document.getElementById('fc-answer'),
+      prev: document.getElementById('fc-prev'),
+      next: document.getElementById('fc-next'),
+      flip: document.getElementById('fc-flip'),
+    };
+
+    function render() {
+      el.counter.textContent = (idx + 1) + ' / ' + cards.length;
+      el.question.textContent = cards[idx].question;
+      el.answer.textContent = cards[idx].answer;
+      flipped = false;
+      el.card.classList.remove('flipped');
+      el.prev.disabled = idx === 0;
+      el.next.disabled = idx === cards.length - 1;
+    }
+
+    el.card.addEventListener('click', function () {
+      flipped = !flipped;
+      el.card.classList.toggle('flipped', flipped);
+    });
+    el.flip.addEventListener('click', function () {
+      flipped = !flipped;
+      el.card.classList.toggle('flipped', flipped);
+    });
+    el.prev.addEventListener('click', function () { if (idx > 0) { idx--; render(); } });
+    el.next.addEventListener('click', function () { if (idx < cards.length - 1) { idx++; render(); } });
+
+    render();
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+# --- Already present in most Python 3.11-3.14 environments; pinned loosely ---
+numpy>=1.26
+torch>=2.2
+faiss-cpu>=1.8
+sentence-transformers>=3.0
+transformers>=4.40
+
+# --- Web app (StudyMate AI dashboard) ---
+fastapi>=0.110
+uvicorn>=0.30
+jinja2>=3.1
+python-multipart>=0.0.9    # required for file uploads via FastAPI
+
+# --- New dependencies for this project (all free / open-source) ---
+openai-whisper>=20250625    # local speech-to-text (no API key)
+# faster-whisper>=1.0.3     # faster alternative - swap in speech/whisper.py
+#                           # if it works on your machine (see note there;
+#                           # it was blocked by Windows Application Control
+#                           # via its PyAV dependency on the dev machine)
+yt-dlp>=2024.8.6           # YouTube / URL video download
+ollama>=0.3.0              # Python client for the local Ollama LLM server
+python-dotenv>=1.0.1       # load .env config
+fpdf2>=2.7.9                # lightweight PDF export (no external deps)
+
+# NOTE: FFmpeg itself is a separate system binary (not a pip package).
+# Install it via winget/choco/apt or download from https://ffmpeg.org
+# and make sure `ffmpeg` is on your PATH.
+#
+# NOTE: Ollama itself is a separate local server application, not a pip
+# package. Install it from https://ollama.com, then run e.g.:
+#   ollama pull llama3.2
+# before starting this app.

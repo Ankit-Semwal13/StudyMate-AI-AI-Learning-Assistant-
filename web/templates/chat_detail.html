@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Chat - {{ v.title }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#128172; {{ v.title }}</h1>
+  <p><a href="/chat" style="color:#a78bfa">&larr; Back to Chat</a> &middot; <a href="/notes/{{ v.slug }}" style="color:#a78bfa">View Notes</a></p>
+</div>
+
+<div class="chat-window">
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-bubble assistant">Ask me anything about "{{ v.title }}" - I'll answer using only what's actually in the transcript.</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="e.g. What did the speaker say about...?" />
+    <button id="chat-send">Send</button>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var slug = {{ v.slug|tojson }};
+  var messages = document.getElementById('chat-messages');
+  var input = document.getElementById('chat-input');
+  var sendBtn = document.getElementById('chat-send');
+
+  function addBubble(role, text) {
+    var div = document.createElement('div');
+    div.className = 'chat-bubble ' + role;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  function send() {
+    var q = input.value.trim();
+    if (!q) return;
+    addBubble('user', q);
+    input.value = '';
+    sendBtn.disabled = true;
+    var thinking = addBubble('assistant', 'Thinking...');
+
+    fetch('/api/chat/' + slug, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        thinking.textContent = data.answer || 'No answer.';
+        if (data.sources && data.sources.length) {
+          var src = document.createElement('div');
+          src.className = 'chat-sources';
+          src.textContent = 'Sources: ' + data.sources.map(function (s) { return s.time; }).join(', ');
+          thinking.appendChild(src);
+        }
+      })
+      .catch(function () { thinking.textContent = 'Something went wrong reaching the server.'; })
+      .finally(function () { sendBtn.disabled = false; });
+  }
+
+  sendBtn.addEventListener('click', send);
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+})();
+</script>
+{% endblock %}

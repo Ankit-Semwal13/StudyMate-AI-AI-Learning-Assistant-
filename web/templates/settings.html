@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Settings - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#9881;&#65039; Settings</h1>
+  <p>Current configuration, read from config.py / .env. Edit .env and restart the server to change these.</p>
+</div>
+
+<div class="content-card">
+  <h2>Pipeline configuration</h2>
+  <div class="settings-grid">
+    {% for k, val in cfg.items() %}
+    <div class="settings-item">
+      <div class="settings-key">{{ k }}</div>
+      <div class="settings-val">{{ val }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="content-card">
+  <h2>About this build</h2>
+  <p>Everything runs free and local: Ollama for the LLM, openai-whisper for transcription, sentence-transformers + FAISS for embeddings/search, yt-dlp for downloads. No API keys required.</p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Quiz - {{ v.title }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#10067; {{ v.title }}</h1>
+  <p><a href="/quiz" style="color:#a78bfa">&larr; Back to Quiz</a> &middot; <a href="/notes/{{ v.slug }}" style="color:#a78bfa">View Notes</a></p>
+</div>
+
+{% if v.quiz %}
+<div class="content-card">
+  <div class="quiz-score-banner" id="quiz-score-banner"></div>
+  <form id="quiz-form"></form>
+  <div class="quiz-actions">
+    <button class="quiz-submit-btn" id="quiz-submit">Submit Quiz</button>
+    <button class="quiz-retry-btn" id="quiz-retry" type="button">Try Again</button>
+    <button type="button" id="quiz-regenerate" style="background:transparent;border:none;color:var(--text-dimmer);font-size:12px;cursor:pointer;">&#128260; Regenerate quiz</button>
+  </div>
+</div>
+{% else %}
+<div class="content-card generate-card">
+  <div class="gc-icon">&#10067;</div>
+  <h2>No quiz yet</h2>
+  <p>Generate a multiple-choice quiz from this video's transcript to test yourself.</p>
+  <button class="primary-btn" id="generate-btn">&#9889; Generate Quiz</button>
+  <div class="generate-progress" id="generate-progress">
+    <div class="progress-track"><div class="progress-fill" id="generate-fill"></div></div>
+    <div class="progress-label" id="generate-label">Starting...</div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var slug = {{ v.slug|tojson }};
+  var questions = {{ v.quiz|default([])|tojson }};
+
+  function pollAndReload(jobId, onError) {
+    var poll = setInterval(function () {
+      fetch('/api/jobs/' + jobId)
+        .then(function (r) { return r.json(); })
+        .then(function (job) {
+          if (job.status === 'done') { clearInterval(poll); window.location.reload(); }
+          else if (job.status === 'error') { clearInterval(poll); if (onError) onError(job.error); }
+        });
+    }, 1500);
+  }
+
+  var generateBtn = document.getElementById('generate-btn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', function () {
+      var progress = document.getElementById('generate-progress');
+      var fill = document.getElementById('generate-fill');
+      var label = document.getElementById('generate-label');
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+      progress.style.display = 'block';
+
+      fetch('/api/quiz/' + slug, { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var poll = setInterval(function () {
+            fetch('/api/jobs/' + data.job_id)
+              .then(function (r) { return r.json(); })
+              .then(function (job) {
+                var pct = Math.round((job.fraction || 0) * 100);
+                fill.style.width = pct + '%';
+                label.textContent = job.stage || 'Working...';
+                if (job.status === 'done') { clearInterval(poll); label.textContent = 'Done! Reloading...'; setTimeout(function () { window.location.reload(); }, 500); }
+                else if (job.status === 'error') { clearInterval(poll); label.textContent = 'Error: ' + (job.error || 'something went wrong'); generateBtn.disabled = false; generateBtn.textContent = 'Retry'; }
+              });
+          }, 1500);
+        });
+    });
+  }
+
+  var regenBtn = document.getElementById('quiz-regenerate');
+  if (regenBtn) {
+    regenBtn.addEventListener('click', function () {
+      regenBtn.textContent = 'Regenerating...';
+      regenBtn.disabled = true;
+      fetch('/api/quiz/' + slug, { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { pollAndReload(data.job_id, function () { regenBtn.textContent = 'Failed - try again'; regenBtn.disabled = false; }); });
+    });
+  }
+
+  if (questions.length) {
+    var form = document.getElementById('quiz-form');
+    var letters = ['A', 'B', 'C', 'D'];
+
+    questions.forEach(function (q, qi) {
+      var block = document.createElement('div');
+      block.className = 'quiz-question';
+      block.setAttribute('data-qi', qi);
+
+      var h4 = document.createElement('h4');
+      h4.textContent = (qi + 1) + '. ' + q.question;
+      block.appendChild(h4);
+
+      q.options.forEach(function (opt, oi) {
+        var label = document.createElement('label');
+        label.className = 'quiz-option';
+        label.setAttribute('data-oi', oi);
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'q' + qi;
+        input.value = oi;
+        label.appendChild(input);
+        var span = document.createElement('span');
+        span.textContent = letters[oi] + ') ' + opt;
+        label.appendChild(span);
+        block.appendChild(label);
+      });
+
+      form.appendChild(block);
+    });
+
+    document.getElementById('quiz-submit').addEventListener('click', function (e) {
+      e.preventDefault();
+      var score = 0;
+      questions.forEach(function (q, qi) {
+        var selected = form.querySelector('input[name="q' + qi + '"]:checked');
+        var selectedIdx = selected ? parseInt(selected.value, 10) : -1;
+        var block = form.querySelector('[data-qi="' + qi + '"]');
+        var options = block.querySelectorAll('.quiz-option');
+        options.forEach(function (opt) {
+          var oi = parseInt(opt.getAttribute('data-oi'), 10);
+          if (oi === q.answer_index) opt.classList.add('correct');
+          else if (oi === selectedIdx) opt.classList.add('incorrect');
+          opt.querySelector('input').disabled = true;
+        });
+        if (selectedIdx === q.answer_index) score++;
+      });
+
+      var banner = document.getElementById('quiz-score-banner');
+      banner.style.display = 'block';
+      banner.textContent = 'Score: ' + score + ' / ' + questions.length;
+
+      document.getElementById('quiz-submit').style.display = 'none';
+      document.getElementById('quiz-retry').style.display = 'inline-block';
+    });
+
+    document.getElementById('quiz-retry').addEventListener('click', function () {
+      window.location.reload();
+    });
+  }
+})();
+</script>
+{% endblock %}

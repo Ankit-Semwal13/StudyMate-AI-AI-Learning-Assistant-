@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}AI Chat - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#128172; AI Chat</h1>
+  <p>Pick a video to chat with - answers are retrieved from its transcript (RAG).</p>
+</div>
+
+{% if videos %}
+<div class="card-list">
+  {% for v in videos %}
+  <a href="/chat/{{ v.slug }}" class="card-row">
+    <div class="project-thumb">&#127909;</div>
+    <div class="project-info">
+      <div class="project-title">{{ v.title }}</div>
+      <div class="project-meta">{{ v.chunks|length }} chapters indexed</div>
+    </div>
+    <span class="chevron">&#8250;</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No videos processed yet - nothing to chat with.</p>
+  <button class="primary-btn" data-open-upload>&#128640; Process your first video</button>
+</div>
+{% endif %}
+
+{% endblock %}

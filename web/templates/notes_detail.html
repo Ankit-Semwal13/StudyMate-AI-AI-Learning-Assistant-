@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ v.title }} - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>{{ v.title }}</h1>
+  <p><a href="/notes" style="color:#a78bfa">&larr; Back to Notes</a></p>
+</div>
+
+<div class="tabs-strip">
+  <a href="#summary" class="tab-link active" data-tab-target="summary">Summary</a>
+  <a href="#notes" class="tab-link" data-tab-target="notes">Notes</a>
+  <a href="#timestamps" class="tab-link" data-tab-target="timestamps">Timestamps</a>
+  <a href="#actions" class="tab-link" data-tab-target="actions">Action Items</a>
+  <a href="/chat/{{ v.slug }}" class="tab-link">Ask AI &#8594;</a>
+</div>
+
+<div class="tab-panel" data-panel="summary">
+  <div class="content-card">
+    <h2>Summary</h2>
+    <p>{{ v.summary or "No summary generated." }}</p>
+    {% if v.key_takeaways %}
+    <h3>Key Takeaways</h3>
+    <ul>
+      {% for kt in v.key_takeaways %}<li>{{ kt }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    <div class="export-row">
+      <a href="/notes/{{ v.slug }}/export.md">&#11015;&#65039; Export Markdown</a>
+      <a href="/notes/{{ v.slug }}/export.pdf">&#11015;&#65039; Export PDF</a>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" data-panel="notes" style="display:none">
+  <div class="content-card">
+    <h2>Notes</h2>
+    {% for chunk_html in v.notes_markdown.split('\n\n---\n\n') %}
+      {% for line in chunk_html.split('\n') %}
+        {% if line.startswith('### ') %}
+          <h3>{{ line[4:] }}</h3>
+        {% elif line.startswith('- ') %}
+          <p style="margin:4px 0">&bull; {{ line[2:] }}</p>
+        {% elif line.strip() %}
+          <p>{{ line }}</p>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+
+<div class="tab-panel" data-panel="timestamps" style="display:none">
+  <div class="content-card">
+    <h2>Important Timestamps</h2>
+    {% if v.timestamps %}
+    <div class="timestamp-list">
+      {% for ts in v.timestamps %}
+      <div class="timestamp-item">
+        <span class="timestamp-time">{{ ts.time }}</span>
+        <span>
+          {% if v.is_url %}
+            <a href="{{ v.source }}&t={{ ts.seconds|int }}s" target="_blank" style="color:#a78bfa">{{ ts.label }}</a>
+          {% else %}
+            {{ ts.label }}
+          {% endif %}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>No timestamps extracted.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="tab-panel" data-panel="actions" style="display:none">
+  <div class="content-card">
+    <h2>Action Items</h2>
+    {% if v.action_items %}
+      {% for item in v.action_items %}
+      <label class="action-item"><input type="checkbox"> {{ item }}</label>
+      {% endfor %}
+    {% else %}
+    <p>No action items detected in this video.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.tab-link[data-tab-target]').forEach(function (link) {
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+    var target = link.getAttribute('data-tab-target');
+    document.querySelectorAll('.tab-link[data-tab-target]').forEach(function (l) { l.classList.remove('active'); });
+    link.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(function (p) {
+      p.style.display = p.getAttribute('data-panel') === target ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

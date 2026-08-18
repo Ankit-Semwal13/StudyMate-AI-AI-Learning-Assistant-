@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Flashcards - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#129504; Flashcards</h1>
+  <p>Pick a video to study - flashcards are generated on demand from its transcript.</p>
+</div>
+
+{% if videos %}
+<div class="card-list">
+  {% for v in videos %}
+  <a href="/flashcards/{{ v.slug }}" class="card-row">
+    <div class="project-thumb">&#129504;</div>
+    <div class="project-info">
+      <div class="project-title">{{ v.title }}</div>
+      <div class="project-meta">
+        {% if v.flashcards_count %}
+          {{ v.flashcards_count }} flashcards ready
+        {% else %}
+          Not generated yet
+        {% endif %}
+      </div>
+    </div>
+    <span class="chevron">&#8250;</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No videos processed yet - nothing to make flashcards from.</p>
+  <button class="primary-btn" data-open-upload>&#128640; Process your first video</button>
+</div>
+{% endif %}
+
+{% endblock %}
