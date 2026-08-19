@@ -1,8 +1,9 @@
-# 🎬 Video Note Extractor AI
+# 🎬 StudyMate AI
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Convert hours of video into structured notes in minutes.
+An AI-powered video note extractor - convert hours of video into
+structured notes in minutes.
 
 Paste a YouTube link or upload a video (lecture, meeting, Zoom recording)
 and get back:
@@ -25,6 +26,31 @@ Everything runs **100% free and local** — no API keys, no per-minute costs:
 | Embeddings     | sentence-transformers (`BAAI/bge-small-en-v1.5`) |
 | Vector DB      | FAISS                                          |
 | Notes Storage  | local JSON files (`notes/`, `transcripts/`)    |
+
+## Screenshots
+
+**Dashboard** — real usage stats, recent projects, and quick actions, all reading from local data:
+
+![Dashboard](docs/screenshots/01_dashboard.png)
+
+**Notes** — auto-generated chapters with headings and bullets, grounded in the transcript:
+
+![Notes](docs/screenshots/02_notes.png)
+
+**Ask AI** — RAG chat over the video's transcript, with cited timestamps:
+
+![Ask AI](docs/screenshots/07_chat.png)
+
+**Flashcards** and **Quiz** — generated on demand, with a real scored quiz run:
+
+<p>
+  <img src="docs/screenshots/04_flashcards.png" width="49%" alt="Flashcards" />
+  <img src="docs/screenshots/05_quiz.png" width="49%" alt="Quiz" />
+</p>
+
+**Analytics** — a real per-video breakdown across everything generated:
+
+![Analytics](docs/screenshots/06_analytics.png)
 
 ## Project layout
 
