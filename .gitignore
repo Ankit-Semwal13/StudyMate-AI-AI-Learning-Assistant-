@@ -13,3 +13,4 @@ vectors/*
 venv/
 .claude/
 *.pdf
+.pytest_cache/

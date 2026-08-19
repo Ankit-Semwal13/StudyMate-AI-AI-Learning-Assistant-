@@ -1,5 +1,7 @@
 # 🎬 Video Note Extractor AI
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+
 Convert hours of video into structured notes in minutes.
 
 Paste a YouTube link or upload a video (lecture, meeting, Zoom recording)
@@ -48,6 +50,9 @@ video-note-extractor/
 │   └── quiz.py                   # multiple-choice quiz generation
 ├── rag/qa.py                  # RAG question answering
 ├── utils/helpers.py            # ffmpeg, formatting, export (MD/PDF)
+├── tests/                      # pytest unit tests for the pure logic
+├── requirements-dev.txt        # requirements.txt + pytest
+├── LICENSE                     # MIT
 ├── uploads/ transcripts/ notes/ vectors/   # local data (gitignored)
 ```
 
@@ -174,6 +179,22 @@ RAG Question Answering (Ask AI tab)
   the embedding model (`bge-small-en-v1.5` ≈ 130 MB) automatically from
   Hugging Face and cache them locally — only needs internet the first time.
 
+## Running the tests
+
+The pure logic (chunking math, timestamp formatting, the flashcard/quiz
+text parsers, slugify, etc.) has unit test coverage under `tests/`. These
+don't need Ollama, Whisper, or FFmpeg running - they're fast, isolated
+tests of the actual parsing/formatting logic:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+Pipeline steps that need real external tools (FFmpeg, yt-dlp downloads,
+Whisper transcription, Ollama calls) are covered by manual/integration
+testing instead, since mocking all of them wouldn't actually prove much.
+
 ## Troubleshooting
 
 - **"Could not reach Ollama model..."** → Make sure the Ollama app is
@@ -191,3 +212,7 @@ RAG Question Answering (Ask AI tab)
   keep up with YouTube changes).
 - **Slow transcription** → Use a smaller Whisper model
   (`WHISPER_MODEL_SIZE=tiny` or `base`) if you're on CPU only.
+
+## License
+
+MIT - see [LICENSE](LICENSE).
