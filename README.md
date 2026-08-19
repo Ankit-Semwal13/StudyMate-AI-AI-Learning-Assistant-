@@ -5,6 +5,8 @@
 An AI-powered video note extractor - convert hours of video into
 structured notes in minutes.
 
+![Demo](docs/demo.gif)
+
 Paste a YouTube link or upload a video (lecture, meeting, Zoom recording)
 and get back:
 
