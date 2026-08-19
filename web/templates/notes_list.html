@@ -4,14 +4,18 @@
 
 <div class="page-header">
   <h1>&#128196; Notes</h1>
+  {% if search_query %}
+  <p>Showing results for &ldquo;{{ search_query }}&rdquo; &middot; <a href="/notes" style="color:#a78bfa">Clear search</a></p>
+  {% else %}
   <p>All the videos you've processed, with their generated notes.</p>
+  {% endif %}
 </div>
 
 {% if videos %}
 <div class="card-list">
   {% for v in videos %}
   <a href="/notes/{{ v.slug }}" class="card-row">
-    <div class="project-thumb">&#127909;</div>
+    <div class="project-thumb hue-{{ (loop.index0 % 5) + 1 }}">&#127909;</div>
     <div class="project-info">
       <div class="project-title">{{ v.title }}</div>
       <div class="project-meta">{{ v.when }} &middot; {{ v.duration }}</div>
@@ -24,6 +28,10 @@
     <span class="chevron">&#8250;</span>
   </a>
   {% endfor %}
+</div>
+{% elif search_query %}
+<div class="empty-state">
+  <p>No videos match &ldquo;{{ search_query }}&rdquo;.</p>
 </div>
 {% else %}
 <div class="empty-state">

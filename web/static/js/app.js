@@ -1,25 +1,23 @@
 (function () {
   "use strict";
 
-  // ---------------- Theme toggle ----------------
+  // ---------------- Theme toggle (sidebar Dark Mode switch) ----------------
   var root = document.documentElement;
-  var themeBtn = document.getElementById("theme-toggle");
+  var darkSwitch = document.getElementById("darkmode-switch");
   var savedTheme = localStorage.getItem("studymate-theme");
   if (savedTheme) root.setAttribute("data-theme", savedTheme);
 
-  function applyThemeIcon() {
-    if (!themeBtn) return;
-    var t = root.getAttribute("data-theme");
-    themeBtn.innerHTML = t === "light" ? "&#127769;" : "&#9728;&#65039;";
+  function syncSwitch() {
+    if (!darkSwitch) return;
+    darkSwitch.checked = root.getAttribute("data-theme") !== "light";
   }
-  applyThemeIcon();
+  syncSwitch();
 
-  if (themeBtn) {
-    themeBtn.addEventListener("click", function () {
-      var current = root.getAttribute("data-theme") === "light" ? "dark" : "light";
-      root.setAttribute("data-theme", current);
-      localStorage.setItem("studymate-theme", current);
-      applyThemeIcon();
+  if (darkSwitch) {
+    darkSwitch.addEventListener("change", function () {
+      var next = darkSwitch.checked ? "dark" : "light";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("studymate-theme", next);
     });
   }
 

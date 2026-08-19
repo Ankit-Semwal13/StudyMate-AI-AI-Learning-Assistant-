@@ -247,14 +247,52 @@ def dashboard():
 
 
 @app.get("/notes", response_class=HTMLResponse)
-def notes_list():
+def notes_list(q: str = ""):
     videos = _all_videos()
+    q_norm = q.strip().lower()
+    if q_norm:
+        videos = [v for v in videos if q_norm in v.get("title", "").lower()]
     for v in videos:
         v["when"] = _relative_time(v.get("created_at", ""))
         v["duration"] = _duration_str(v.get("duration_seconds", 0))
     return render(
         "notes_list.html",
-        videos=videos, active_page="notes",
+        videos=videos, active_page="notes", search_query=q,
+        user_name=USER_NAME, user_plan=USER_PLAN,
+    )
+
+
+@app.get("/analytics", response_class=HTMLResponse)
+def analytics():
+    videos = _all_videos()
+
+    total_duration = sum(v.get("duration_seconds", 0) for v in videos)
+    rows = []
+    for v in videos:
+        rows.append({
+            "title": v["title"],
+            "when": _relative_time(v.get("created_at", "")),
+            "duration": _duration_str(v.get("duration_seconds", 0)),
+            "chapters": len(v.get("chunks", [])),
+            "timestamps": len(v.get("timestamps", [])),
+            "action_items": len(v.get("action_items", [])),
+            "flashcards": len(v.get("flashcards", [])),
+            "quiz": len(v.get("quiz", [])),
+        })
+
+    return render(
+        "analytics.html",
+        videos=videos,
+        rows=rows,
+        stats={
+            "videos": len(videos),
+            "notes": sum(len(v.get("chunks", [])) for v in videos),
+            "flashcards": sum(len(v.get("flashcards", [])) for v in videos),
+            "quiz": sum(len(v.get("quiz", [])) for v in videos),
+            "total_duration": _duration_str(total_duration),
+            "action_items": sum(len(v.get("action_items", [])) for v in videos),
+        },
+        active_page="analytics",
         user_name=USER_NAME, user_plan=USER_PLAN,
     )
 

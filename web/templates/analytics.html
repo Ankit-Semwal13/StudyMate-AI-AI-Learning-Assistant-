@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Analytics - StudyMate AI{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>&#128202; Analytics</h1>
+  <p>A real-time rollup of everything generated across your processed videos.</p>
+</div>
+
+<section class="stat-grid">
+  <div class="stat-card" style="--accent:#4f7cff">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#4f7cff,#6d5bff)">&#127909;</div>
+    </div>
+    <div class="stat-label">Total Videos</div>
+    <div class="stat-value">{{ stats.videos }}</div>
+    <div class="stat-sub">{{ stats.total_duration }} of content processed</div>
+  </div>
+  <div class="stat-card" style="--accent:#22c55e">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a)">&#128196;</div>
+    </div>
+    <div class="stat-label">Chapters (Notes)</div>
+    <div class="stat-value">{{ stats.notes }}</div>
+    <div class="stat-sub">{{ stats.action_items }} action items detected</div>
+  </div>
+  <div class="stat-card" style="--accent:#f59e0b">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">&#129504;</div>
+    </div>
+    <div class="stat-label">Flashcards</div>
+    <div class="stat-value">{{ stats.flashcards }}</div>
+    <div class="stat-sub">Across all videos</div>
+  </div>
+  <div class="stat-card" style="--accent:#ec4899">
+    <div class="stat-top">
+      <div class="stat-icon" style="background:linear-gradient(135deg,#ec4899,#db2777)">&#10067;</div>
+    </div>
+    <div class="stat-label">Quiz Questions</div>
+    <div class="stat-value">{{ stats.quiz }}</div>
+    <div class="stat-sub">Across all videos</div>
+  </div>
+</section>
+
+<div class="content-card">
+  <h2>Per-video breakdown</h2>
+  {% if rows %}
+  <div class="analytics-table">
+    <div class="analytics-row analytics-head">
+      <span>Video</span><span>Processed</span><span>Length</span>
+      <span>Chapters</span><span>Timestamps</span><span>Actions</span>
+      <span>Flashcards</span><span>Quiz</span>
+    </div>
+    {% for r in rows %}
+    <div class="analytics-row">
+      <span class="analytics-title">{{ r.title }}</span>
+      <span>{{ r.when }}</span>
+      <span>{{ r.duration }}</span>
+      <span>{{ r.chapters }}</span>
+      <span>{{ r.timestamps }}</span>
+      <span>{{ r.action_items }}</span>
+      <span>{{ r.flashcards }}</span>
+      <span>{{ r.quiz }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>No videos processed yet - nothing to analyze.</p>
+  {% endif %}
+</div>
+
+{% endblock %}
